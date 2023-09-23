@@ -1,26 +1,73 @@
-function Game({verifyLetter}: {verifyLetter: () => void}) {
+import { useState, useRef } from "react"
+import { Form, Input, LetterContainer, P, SpanBlankSquare, SpanLetter, Title, WordContainer } from "./style"
+
+interface GameProps{
+    verifyLetter: (letter:string) => void
+    pickedWord: string
+    pickedCategory: string
+    letters: string[]
+    wrongLetters: string[]
+    guesses: number
+    score: number
+    guessedLetters: string[]
+}
+
+function Game(props: GameProps) {
+    const [letter, setLetter] = useState("")
+    // Esse hook cria uma referencia a algum lugar
+    const letterInputRef = useRef<HTMLInputElement | null>(null)
+
+    function handleSubmit(e: React.FormEvent<HTMLFormElement | null>){
+        e.preventDefault()
+
+        props.verifyLetter(letter)
+
+        setLetter("")
+        
+        if (letterInputRef.current) {
+            letterInputRef.current.focus();
+        }
+    }
+
     return(
-        <>
+        <div>
             <p>
-                <span>Pontuação: 000</span>
+                <span>Pontuação: {props.score}</span>
             </p>
-            <h1>Adivinhe a palavra: </h1>
-            <h3>Dica sobre a palvra: </h3>
-            <div>
-                <span></span>
-                <span></span>
-            </div>
-            <div>
+            <Title>Adivinhe a palavra: </Title>
+            <h3>Dica sobre a palvra: <span>{props.pickedCategory}</span></h3>
+            <p>Voce ainda tem {props.guesses} tentativas</p>
+            <WordContainer>
+                {props.letters.map((letter, i) => (
+                    props.guessedLetters.includes(letter) ? (
+                        <SpanLetter key={i}>{letter}</SpanLetter>
+                    ) : (
+                        <SpanBlankSquare key={i}></SpanBlankSquare>
+                    )
+                ))}
+            </WordContainer>
+            <LetterContainer>
                 <p>Tente adivinhar a palavra</p>
-                <form>
-                    <input type="text" name="letter" maxLength={1}></input>
+                <Form onSubmit={handleSubmit}>
+                    <Input
+                        type="text"
+                        name="letter"
+                        maxLength={1}
+                        required
+                        onChange={(e) => setLetter(e.target.value)}
+                        value={letter}
+                        ref={letterInputRef}
+                    />
                     <button>Play</button>
-                </form>
-            </div>
+                </Form>
+            </LetterContainer>
             <div>
-                <p>Letras já utilizadas</p>
+                <P>Letras já utilizadas: </P>
+                {props.wrongLetters.map((letter, i) => (
+                    <span key={i}>{letter}, </span>
+                ))}
             </div>
-        </>
+        </div>
     )
 }
 
